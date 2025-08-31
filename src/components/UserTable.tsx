@@ -245,7 +245,7 @@ export default function UserTable() {
                       
                     </button>
                       <button
-                      className="p-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="p-2 rounded-lg border border-teal-300 text-teal-600 dark:border-teal-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                       onClick={() => setOpenForm({ mode: "edit", user: u })}
                     >
                       <Pencil size={16} />
