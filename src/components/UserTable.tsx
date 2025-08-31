@@ -11,7 +11,7 @@ import { useActivityStore } from "@/store/activityStore";
 import clsx from "clsx";
 
 function initials(name: string) {
-  return name.split(" ").map((n) => n[0]).join("").slice(0,2).toUpperCase();
+  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
 const PAGE_SIZE = 5;
@@ -24,16 +24,14 @@ export default function UserTable() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder | undefined>("asc");
-  // companyFilter uses "all" as default string
   const [companyFilter, setCompanyFilter] = useState<string>("all");
 
-  // Query: fetch users for current page/search/sort (JSONPlaceholder returns all users;
-  // we still request with _page/_limit for pagination simulation)
+  // Query: fetch users for current page/search/sort
   const usersQuery = useQuery({
     queryKey: ["users", { page, search, sortOrder }],
     queryFn: () => getUsers({ page, limit: PAGE_SIZE, search, sortEmail: sortOrder }),
     staleTime: 1000 * 30,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Fetch list of companies for the filter dropdown
@@ -43,7 +41,7 @@ export default function UserTable() {
     staleTime: 1000 * 60,
   });
 
-  // Apply client-side filter by company after data is fetched (some APIs don't support this)
+  // Apply client-side filter by company after data is fetched
   const filteredUsers = useMemo(() => {
     const list = usersQuery.data ?? [];
     if (companyFilter === "all") return list;
@@ -55,18 +53,16 @@ export default function UserTable() {
     mutationFn: createUser,
     onMutate: async (payload) => {
       await qc.cancelQueries({ queryKey: ["users"] });
-      // snapshot previous cached data for rollback
       const prev = qc.getQueryData(["users", { page, search, sortOrder }]);
       qc.setQueryData(["users", { page, search, sortOrder }], (old: User[] | undefined) => {
         const company = { name: (payload as any).company };
-        const optimistic = { id: Math.floor(Math.random()*100000), name: (payload as any).name, email: (payload as any).email, phone: (payload as any).phone, company } as User;
+        const optimistic = { id: Math.floor(Math.random() * 100000), name: (payload as any).name, email: (payload as any).email, phone: (payload as any).phone, company } as User;
         return [optimistic, ...(old ?? [])].slice(0, PAGE_SIZE);
       });
       addLog({ type: "add", message: `Added user ${(payload as any).name}` });
       return { prev };
     },
     onError: (_e, _v, ctx) => {
-      // rollback on error
       if (ctx?.prev) qc.setQueryData(["users", { page, search, sortOrder }], ctx.prev);
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["users"] })
@@ -129,30 +125,41 @@ export default function UserTable() {
             className="w-full md:w-64 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2"
           />
 
-          {/* Sort Select using Radix */}
-          <Select.Root value={sortOrder ?? "asc"} onValueChange={(v) => setSortOrder(v as any)}>
-            <Select.Trigger className="rounded-xl border px-3 py-2 border-gray-300 dark:border-gray-700 min-w-[140px] text-left">
-              <Select.Value placeholder="Sort by email" />
-            </Select.Trigger>
-            <Select.Content className="rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <Select.Item value="asc" className="px-3 py-2 cursor-pointer">Email A–Z</Select.Item>
-              <Select.Item value="desc" className="px-3 py-2 cursor-pointer">Email Z–A</Select.Item>
-            </Select.Content>
-          </Select.Root>
+         {/* Sort Select using Radix */}
+<Select.Root value={sortOrder ?? "asc"} onValueChange={(v) => setSortOrder(v as any)}>
+  <Select.Trigger className="rounded-xl border px-3 py-2 border-gray-300 dark:border-gray-700 min-w-[140px] min-h-[39px] text-left data-[state=open]:border-b-0 data-[state=open]:rounded-b-none">
+    <Select.Value className="text-gray-500 dark:text-gray-400">Filter by email</Select.Value>
+  </Select.Trigger>
+  <Select.Portal>
+    <Select.Content
+      position="popper"
+      sideOffset={-1}
+      className="z-50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 w-[var(--radix-select-trigger-width)] rounded-b-xl"
+    >
+      <Select.Item value="asc" className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">Email A–Z</Select.Item>
+      <Select.Item value="desc" className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">Email Z–A</Select.Item>
+    </Select.Content>
+  </Select.Portal>
+</Select.Root>
 
-          {/* Company Filter - fixed: include 'All' and actual companies */}
-          <Select.Root value={companyFilter} onValueChange={(v) => setCompanyFilter(v)}>
-            <Select.Trigger className="rounded-xl border px-3 py-2 border-gray-300 dark:border-gray-700 min-w-[160px] text-left">
-              <Select.Value placeholder="Filter by company" />
-            </Select.Trigger>
-            <Select.Content className="rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-64 overflow-auto">
-              <Select.Item value="all" className="px-3 py-2 cursor-pointer">All companies</Select.Item>
-              {(companiesQuery.data ?? []).map((c) => (
-                <Select.Item key={c} value={c} className="px-3 py-2 cursor-pointer">{c}</Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </div>
+{/* Company Filter - fixed: include 'All' and actual companies */}
+<Select.Root value={companyFilter} onValueChange={(v) => setCompanyFilter(v)}>
+  <Select.Trigger className="rounded-xl border px-3 py-2 border-gray-300 dark:border-gray-700 min-w-[160px] min-h-[39px] text-left data-[state=open]:border-b-0 data-[state=open]:rounded-b-none">
+    <Select.Value className="text-gray-500 dark:text-gray-400">{companyFilter === "all" ? "Filter by company" : companyFilter}</Select.Value>
+  </Select.Trigger>
+  <Select.Portal>
+    <Select.Content
+      position="popper"
+      sideOffset={-1}
+      className="z-50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 w-[var(--radix-select-trigger-width)] max-h-64 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] rounded-b-xl"
+    >
+      <Select.Item value="all" className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">All companies</Select.Item>
+      {(companiesQuery.data ?? []).map((c) => (
+        <Select.Item key={c} value={c} className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">{c}</Select.Item>
+      ))}
+    </Select.Content>
+  </Select.Portal>
+</Select.Root>        </div>
 
         {/* Add User button (opens dialog) */}
         <Dialog.Root open={!!openForm} onOpenChange={(o) => !o && setOpenForm(null)}>
