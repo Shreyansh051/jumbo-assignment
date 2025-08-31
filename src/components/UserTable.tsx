@@ -1,22 +1,14 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUsers, getAllCompanies, createUser, updateUser, deleteUser, type User, type SortOrder } from "@/src/lib/usersApi";
+import { getUsers, getAllCompanies, createUser, updateUser, deleteUser, type User, type SortOrder } from "@/lib/usersApi";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useActivityStore } from "@/src/store/activityStore";
+import { useActivityStore } from "@/store/activityStore";
 import clsx from "clsx";
-
-/**
- * UserTable
- * - Fixed company filter: we fetch companies separately and populate select items.
- * - Fixed pagination edge: disable Next when fetched items < PAGE_SIZE.
- * - Added Loader, Empty State and small responsive tweaks.
- * - Added inline comments to explain logic for reviewers.
- */
 
 function initials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").slice(0,2).toUpperCase();
@@ -167,7 +159,7 @@ export default function UserTable() {
           <Dialog.Trigger asChild>
             <button
               onClick={() => setOpenForm({ mode: "add" })}
-              className="rounded-xl bg-indigo-600 text-white px-4 py-2 hover:opacity-90"
+              className="rounded-xl bg-[#8009CB] text-white px-4 py-2 hover:opacity-90"
             >
               + Add User
             </button>
@@ -235,7 +227,7 @@ export default function UserTable() {
             {filteredUsers.map((u) => (
               <tr key={u.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50/60 dark:hover:bg-white/5">
                 <td className="p-3">
-                  <div className="h-8 w-8 rounded-full bg-indigo-500 text-white grid place-items-center text-xs font-bold">
+                  <div className="h-8 w-8 rounded-full bg-[#8009CB] text-white grid place-items-center text-xs font-bold">
                     {initials(u.name)}
                   </div>
                 </td>
@@ -403,7 +395,7 @@ function UserForm({ initial, onSubmit, onCancel }: { initial?: User; onSubmit: (
         <button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700">
           Cancel
         </button>
-        <button type="submit" className="px-3 py-2 rounded-lg bg-indigo-600 text-white">
+        <button type="submit" className="px-3 py-2 rounded-lg bg-[#8009CB] text-white">
           Save
         </button>
       </div>

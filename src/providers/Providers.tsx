@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
-import { useThemeStore } from "@/src/store/themeStore";
+import { useThemeStore } from "@/store/themeStore";
 
 /**
  * Providers
