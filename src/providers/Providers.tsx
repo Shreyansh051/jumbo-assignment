@@ -4,11 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
 import { useThemeStore } from "@/store/themeStore";
 
-/**
- * Providers
- * - Central place for app-wide providers (React Query, theme class toggling).
- * - We use Zustand for theme and persist it; here we apply the `dark` class to document root.
- */
+
 export default function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(() => new QueryClient());
   const { theme } = useThemeStore();

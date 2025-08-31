@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Jumbo User Dashboard",
-  description: "User Management Dashboard (Assignment)",
+  description: "User Management Dashboard ",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

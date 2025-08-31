@@ -5,7 +5,6 @@ import { useAuthStore } from "@/store/authStore";
 import * as Switch from "@radix-ui/react-switch";
 
 
-
 function initials(name: string) {
   return name
     .split(" ")

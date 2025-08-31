@@ -16,7 +16,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: { id: 1, name: "Leanne Graham", email: "Sincere@april.biz" }, // hardcoded per assignment
+      user: { id: 1, name: "Leanne Graham", email: "Sincere@april.biz" },
       setUser: (u) => set({ user: u }),
     }),
     { name: "auth-store" }

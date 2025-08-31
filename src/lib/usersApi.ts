@@ -1,7 +1,19 @@
+// src/lib/usersApi.ts
+
+import { ReactNode } from "react";
 import { api } from "./api";
 
-export interface Address { street: string; city: string; zipcode: string; }
-export interface Company { name: string; }
+export interface Address {
+  suite: ReactNode;
+  street: string;
+  city: string;
+  zipcode: string;
+}
+
+export interface Company {
+  name: string;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -13,30 +25,42 @@ export interface User {
 
 export type SortOrder = "asc" | "desc";
 
-// Fetch users with simple pagination simulation.
-// JSONPlaceholder doesn't fully support server-side search by name, so we filter client-side.
-export async function getUsers(params: {
+// New type for getUsers parameters, including 'company'.
+export type GetUsersParams = {
   page: number;
   limit: number;
   search?: string;
   sortEmail?: SortOrder;
-}) {
-  const { page, limit, search, sortEmail } = params;
-  const res = await api.get<User[]>("/users", {
-    params: {
-      _page: page,
-      _limit: limit,
-      _sort: sortEmail ? "email" : undefined,
-      _order: sortEmail,
-    },
-  });
-  let data = res.data;
-  // Client-side search by name
+  company?: string;
+};
+
+// Fetch users with pagination, search, sorting, and company filtering.
+export async function getUsers(params: GetUsersParams) {
+  const { page, limit, search, sortEmail, company } = params;
+  
+  // Construct the query parameters for the API call
+  const apiParams: { [key: string]: any } = {
+    _page: page,
+    _limit: limit,
+    _sort: sortEmail ? "email" : undefined,
+    _order: sortEmail,
+  };
+
   if (search) {
-    const q = search.toLowerCase();
-    data = data.filter((u) => u.name.toLowerCase().includes(q));
+    apiParams.q = search; // Use the 'q' parameter for server-side search
   }
-  return data;
+  
+  if (company) {
+    // Add company filter to the API request
+    apiParams['company.name'] = company;
+  }
+  
+  const res = await api.get<User[]>("/users", {
+    params: apiParams,
+  });
+  
+  // Return data directly, as filtering is now done on the server
+  return res.data;
 }
 
 // Get unique company names for Select
@@ -51,7 +75,6 @@ export async function getUserById(id: number): Promise<User> {
   return res.data;
 }
 
-// Create user (JSONPlaceholder will not persist, so we fake id & company shape)
 export async function createUser(data: Omit<User, "id" | "address" | "company"> & { company: string }) {
   await api.post("/users", data);
   return { ...data, id: Math.floor(Math.random() * 10000), company: { name: data.company } } as any;

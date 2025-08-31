@@ -6,7 +6,7 @@ export type Activity = {
   id: string;
   type: "add" | "edit" | "delete";
   message: string;
-  at: string; // ISO date
+  at: string; 
 };
 
 interface ActivityState {
